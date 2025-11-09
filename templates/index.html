@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ship CO₂ Emission Predictor</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(120deg, #003049, #0077b6, #00b4d8);
+      font-family: "Poppins", sans-serif;
+      min-height: 100vh;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      color: #000;
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 950px;
+      padding: 2.5rem;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.01);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    h2 {
+      text-align: center;
+      color: #0077b6;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    label {
+      font-weight: 500;
+      color: #004080;
+    }
+
+    .input-group-text {
+      background: #0077b6;
+      color: white;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .form-control, .form-select {
+      border-radius: 8px;
+      border: 1px solid #0077b6;
+      transition: all 0.2s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      box-shadow: 0 0 8px #00b4d8;
+      border-color: #00b4d8;
+    }
+
+    .btn-predict {
+      background: linear-gradient(90deg, #00b894, #00cec9);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      width: 100%;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-predict:hover {
+      background: linear-gradient(90deg, #00cec9, #00b894);
+      transform: scale(1.03);
+      box-shadow: 0 0 10px rgba(0, 200, 180, 0.6);
+    }
+
+    .prediction-box {
+      margin-top: 25px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      padding: 12px;
+      border-radius: 10px;
+      color: white;
+      display: none;
+    }
+
+    .prediction-low { background-color: #2ecc71; display: block; }
+    .prediction-moderate { background-color: #f1c40f; display: block; color: #000; }
+    .prediction-high { background-color: #e74c3c; display: block; }
+
+    /* Charts section */
+    #charts-container {
+      margin-top: 40px;
+    }
+
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>🌊 Ship CO₂ Emission Predictor</h2>
+
+    <!-- Form -->
+    <form action="/predict" method="post">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Ship Type:</label>
+          <select class="form-select" name="ship_type" required>
+            <option>Bulk carrier</option>
+            <option>Ro-ro ship</option>
+            <option>Ro-pax ship</option>
+            <option>Container/ro-ro cargo ship</option>
+            <option>General cargo ship</option>
+            <option>Refrigerated cargo carrier</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Technical Efficiency:</label>
+          <div class="input-group">
+            <input type="number" step="any" name="technical_efficiency" class="form-control" required>
+            <span class="input-group-text">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Total Fuel Consumption:</label>
+          <div class="input-group">
+            <input type="number" step="any" name="fuel_consumption" class="form-control" required>
+            <span class="input-group-text">m tonnes</span>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Total CO₂ Emissions:</label>
+          <div class="input-group">
+            <input type="number" step="any" name="co2_emissions" class="form-control" required>
+            <span class="input-group-text">m tonnes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Annual Time at Sea:</label>
+          <div class="input-group">
+            <input type="number" step="any" name="annual_time_sea" class="form-control" required>
+            <span class="input-group-text">hours</span>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Annual Avg Fuel per Distance:</label>
+          <div class="input-group">
+            <input type="number" step="any" name="avg_fuel_distance" class="form-control" required>
+            <span class="input-group-text">kg/n mile</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label>Annual Avg Fuel per Work:</label>
+          <div class="input-group">
+            <input type="number" step="any" name="avg_fuel_work" class="form-control" required>
+            <span class="input-group-text">g/m·n miles</span>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label>Annual Avg CO₂ per Work:</label>
+          <div class="input-group">
+            <input type="number" step="any" name="avg_co2_work" class="form-control" required>
+            <span class="input-group-text">g CO₂/m·n miles</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label>Time Spent at Sea:</label>
+        <div class="input-group">
+          <input type="number" step="any" name="time_at_sea" class="form-control" required>
+          <span class="input-group-text">hours</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-predict">🚀 Predict Emissions</button>
+    </form>
+
+    <!-- Prediction Box -->
+    {% if prediction_text %}
+    <div id="prediction-box" class="prediction-box
+         {% if 'Low' in prediction_text %}prediction-low{% elif 'Moderate' in prediction_text %}prediction-moderate{% else %}prediction-high{% endif %}">
+      <p>{{ prediction_text }}</p>
+
+      <!-- Charts -->
+      <div id="charts-container">
+        <canvas id="gaugeChart"></canvas>
+        <canvas id="historyChart"></canvas>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Chart.js logic -->
+  <script>
+    {% if prediction_text %}
+    const text = "{{ prediction_text }}";
+    let value = parseFloat(text.match(/[0-9.]+/));
+    if (isNaN(value)) value = 0;
+
+    // Gauge Chart
+    const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
+    new Chart(ctxGauge, {
+      type: 'doughnut',
+      data: {
+        datasets: [{
+          data: [value, 200 - value],
+          backgroundColor: value < 50 ? ['#2ecc71', '#e0e0e0'] :
+                            value < 150 ? ['#f1c40f', '#e0e0e0'] :
+                                          ['#e74c3c', '#e0e0e0'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        circumference: 180,
+        rotation: 270,
+        cutout: '70%',
+        plugins: {
+          tooltip: { enabled: false },
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'CO₂ Emission Gauge (g CO₂/n mile)',
+            color: '#0077b6',
+            font: { size: 18, weight: 'bold' }
+          }
+        }
+      }
+    });
+
+    // Historical Chart
+    let history = JSON.parse(localStorage.getItem('emissionHistory')) || [];
+    history.push(value);
+    if (history.length > 8) history.shift();
+    localStorage.setItem('emissionHistory', JSON.stringify(history));
+
+    const ctxHistory = document.getElementById('historyChart').getContext('2d');
+    new Chart(ctxHistory, {
+      type: 'bar',
+      data: {
+        labels: history.map((_, i) => "Run " + (i + 1)),
+        datasets: [{
+          label: "Predicted CO₂ (g/n mile)",
+          data: history,
+          backgroundColor: history.map(v => v < 50 ? '#2ecc71' : v < 150 ? '#f1c40f' : '#e74c3c')
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Historical Emission Predictions (g CO₂/n mile)',
+            color: '#0077b6',
+            font: { size: 16, weight: 'bold' }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 200, title: { display: true, text: 'CO₂ (g/n mile)' } }
+        }
+      }
+    });
+    {% endif %}
+  </script>
+</body>
+</html>
