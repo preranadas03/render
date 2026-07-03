@@ -417,9 +417,9 @@
                 <div class="row g-3">
                   
                   <div class="col-md-6">
-                    <label class="form-label">Ship Category</label>
+                    <label class="form-label">Vessel Type</label>
                     <select class="form-select" id="ship_type" name="ship_type" required>
-                      <option value="" disabled selected>Select category</option>
+                      <option value="" disabled selected>Select type</option>
                       <option value="Bulk carrier">Bulk carrier</option>
                       <option value="General cargo ship">General cargo ship</option>
                       <option value="Refrigerated cargo carrier">Refrigerated cargo carrier</option>
@@ -428,7 +428,7 @@
                   </div>
                   
                   <div class="col-md-6">
-                    <label class="form-label">Technical Efficiency</label>
+                    <label class="form-label">Vessel Efficiency Rating</label>
                     <div class="input-group">
                       <input type="number" step="any" min="0" max="100" id="technical_efficiency" name="technical_efficiency" class="form-control" placeholder="E.g., 3.5" required>
                       <span class="input-group-text">%</span>
@@ -436,7 +436,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label">Annual Fuel Consumption</label>
+                    <label class="form-label">Annual Fuel Burned</label>
                     <div class="input-group">
                       <input type="number" step="any" min="0" id="fuel_consumption" name="fuel_consumption" class="form-control" placeholder="E.g., 4500" required>
                       <span class="input-group-text">m tonnes</span>
@@ -444,7 +444,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label">Annual CO₂ Emissions</label>
+                    <label class="form-label">Annual CO₂ Released</label>
                     <div class="input-group">
                       <input type="number" step="any" min="0" id="co2_emissions" name="co2_emissions" class="form-control" placeholder="E.g., 14100" required>
                       <span class="input-group-text">m tonnes</span>
@@ -452,7 +452,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label">Annual Time at Sea</label>
+                    <label class="form-label">Annual Hours at Sea</label>
                     <div class="input-group">
                       <input type="number" step="any" min="0" id="annual_time_sea" name="annual_time_sea" class="form-control" placeholder="E.g., 5200" required>
                       <span class="input-group-text">hours</span>
@@ -460,7 +460,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label">Avg Fuel per Distance</label>
+                    <label class="form-label">Avg Fuel per Mile</label>
                     <div class="input-group">
                       <input type="number" step="any" min="0" id="avg_fuel_distance" name="avg_fuel_distance" class="form-control" placeholder="E.g., 35.8" required>
                       <span class="input-group-text">kg/n mile</span>
@@ -468,7 +468,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label">Avg Fuel per Work</label>
+                    <label class="form-label">Avg Fuel per Tonne-Mile</label>
                     <div class="input-group">
                       <input type="number" step="any" min="0" id="avg_fuel_work" name="avg_fuel_work" class="form-control" placeholder="E.g., 4.2" required>
                       <span class="input-group-text">g/m·t·nm</span>
@@ -476,7 +476,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label">Avg CO₂ per Work</label>
+                    <label class="form-label">Avg CO₂ per Tonne-Mile</label>
                     <div class="input-group">
                       <input type="number" step="any" min="0" id="avg_co2_work" name="avg_co2_work" class="form-control" placeholder="E.g., 13.2" required>
                       <span class="input-group-text">g CO₂/m·t·nm</span>
@@ -484,7 +484,7 @@
                   </div>
 
                   <div class="col-md-12">
-                    <label class="form-label">Target Journey Duration</label>
+                    <label class="form-label">Current Trip Duration</label>
                     <div class="input-group">
                       <input type="number" step="any" min="0" id="time_at_sea" name="time_at_sea" class="form-control" placeholder="E.g., 240" required>
                       <span class="input-group-text">hours</span>
@@ -623,7 +623,7 @@
                 <!-- Slider 1 -->
                 <div class="mb-4">
                   <div class="d-flex justify-content-between mb-1">
-                    <label class="form-label text-muted mb-0">Total Distance Travelled (nm)</label>
+                    <label class="form-label text-muted mb-0">Trip Distance (Nautical Miles)</label>
                     <span class="text-info fw-semibold" id="sim-dist-val">40,000</span>
                   </div>
                   <input type="range" class="form-range" min="1000" max="100000" step="1000" value="40000" id="sim-distance" oninput="runSandboxSim()">
@@ -632,7 +632,7 @@
                 <!-- Slider 2 -->
                 <div class="mb-4">
                   <div class="d-flex justify-content-between mb-1">
-                    <label class="form-label text-muted mb-0">Average Speed Index (knots)</label>
+                    <label class="form-label text-muted mb-0">Average Speed (Knots)</label>
                     <span class="text-info fw-semibold" id="sim-speed-val">15</span>
                   </div>
                   <input type="range" class="form-range" min="8" max="30" step="0.5" value="15" id="sim-speed" oninput="runSandboxSim()">
@@ -641,7 +641,7 @@
                 <!-- Slider 3 -->
                 <div class="mb-4">
                   <div class="d-flex justify-content-between mb-1">
-                    <label class="form-label text-muted mb-0">Fuel Efficiency Adjustment (%)</label>
+                    <label class="form-label text-muted mb-0">Efficiency Tuning (%)</label>
                     <span class="text-info fw-semibold" id="sim-eff-val">0% (Baseline)</span>
                   </div>
                   <input type="range" class="form-range" min="-30" max="30" step="1" value="0" id="sim-efficiency" oninput="runSandboxSim()">
