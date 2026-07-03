@@ -3,297 +3,1371 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ship CO₂ Emission Predictor</title>
+  <title>GreenWaves — Ship Carbon Footprint Dashboard</title>
 
+  <!-- Google Fonts: Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
   <style>
+    :root {
+      --bg-dark: #07111e;
+      --bg-card: rgba(255, 255, 255, 0.05);
+      --border-color: rgba(255, 255, 255, 0.12);
+      --accent-cyan: #00f2fe;
+      --accent-blue: #4facfe;
+      --accent-emerald: #00b894;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
     body {
-      background: linear-gradient(120deg, #003049, #0077b6, #00b4d8);
-      font-family: "Poppins", sans-serif;
+      background: radial-gradient(circle at 10% 20%, #071527 0%, #020912 90%);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
       min-height: 100vh;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    .card {
-      background: #ffffff;
-      color: #000;
-      border-radius: 20px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-      width: 100%;
-      max-width: 950px;
-      padding: 2.5rem;
-      transition: 0.3s;
+    /* Floating bubbles background */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(circle at 80% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+                  radial-gradient(circle at 20% 80%, rgba(79, 172, 254, 0.05) 0%, transparent 40%);
+      pointer-events: none;
+      z-index: 0;
     }
 
-    .card:hover {
-      transform: scale(1.01);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-    }
-
-    h2 {
-      text-align: center;
-      color: #0077b6;
+    h1, h2, h3, h4, .brand-font {
+      font-family: 'Outfit', sans-serif;
       font-weight: 700;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
     }
 
-    label {
-      font-weight: 500;
-      color: #004080;
+    /* Navbar & Branding */
+    .navbar-brand {
+      font-size: 1.5rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .input-group-text {
-      background: #0077b6;
-      color: white;
-      border: none;
-      font-size: 0.9rem;
+    .navbar {
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 10;
+    }
+
+    /* Navigation Tabs Styling */
+    .nav-pills .nav-link {
+      color: var(--text-muted);
+      border-radius: 30px;
+      padding: 10px 24px;
       font-weight: 500;
-      border-radius: 0 8px 8px 0;
+      font-size: 0.95rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      margin: 0 4px;
+    }
+
+    .nav-pills .nav-link:hover {
+      color: var(--text-main);
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-pills .nav-link.active {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #07111e;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(0, 242, 254, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Form controls in dark/glass style */
+    .form-label {
+      font-weight: 500;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .form-control, .form-select {
-      border-radius: 8px;
-      border: 1px solid #0077b6;
-      transition: all 0.2s ease;
+      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      border-radius: 10px;
+      padding: 11px 16px;
+      transition: all 0.25s ease;
     }
 
     .form-control:focus, .form-select:focus {
-      box-shadow: 0 0 8px #00b4d8;
-      border-color: #00b4d8;
+      background-color: rgba(0, 0, 0, 0.3);
+      border-color: var(--accent-cyan);
+      color: var(--text-main);
+      box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.15);
     }
 
-    .btn-predict {
-      background: linear-gradient(90deg, #00b894, #00cec9);
-      color: white;
+    .input-group-text {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      border-radius: 0 10px 10px 0;
+      font-size: 0.85rem;
+    }
+
+    /* Buttons */
+    .btn-gradient {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      color: #07111e;
       border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2);
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 242, 254, 0.35);
+      color: #07111e;
+    }
+
+    .btn-outline-custom {
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      background-color: transparent;
       border-radius: 10px;
-      padding: 12px;
+      padding: 10px 20px;
+      transition: all 0.25s ease;
+    }
+
+    .btn-outline-custom:hover, .btn-outline-custom.active {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Presets Section */
+    .preset-pill {
+      font-size: 0.82rem;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 16px;
+      border-radius: 20px;
+      color: var(--text-muted);
+      transition: all 0.25s ease;
+      text-align: left;
       width: 100%;
-      font-size: 1.1rem;
-      font-weight: 600;
-      transition: all 0.3s;
     }
 
-    .btn-predict:hover {
-      background: linear-gradient(90deg, #00cec9, #00b894);
-      transform: scale(1.03);
-      box-shadow: 0 0 10px rgba(0, 200, 180, 0.6);
+    .preset-pill:hover {
+      background: rgba(0, 242, 254, 0.08);
+      border-color: var(--accent-cyan);
+      color: var(--text-main);
+      transform: translateY(-1px);
     }
 
-    .prediction-box {
-      margin-top: 25px;
-      text-align: center;
-      font-size: 1.2rem;
-      font-weight: 600;
-      padding: 12px;
-      border-radius: 10px;
-      color: white;
-      display: none;
+    /* Rating Badges */
+    .cii-badge {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #000;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      margin: 0 auto;
+    }
+    
+    .cii-A { background-color: #2ecc71; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
+    .cii-B { background-color: #a3e4d7; box-shadow: 0 0 15px rgba(163, 228, 215, 0.4); }
+    .cii-C { background-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); }
+    .cii-D { background-color: #e67e22; box-shadow: 0 0 15px rgba(230, 126, 34, 0.4); }
+    .cii-E { background-color: #e74c3c; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4); }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #020912;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
     }
 
-    .prediction-low { background-color: #2ecc71; display: block; }
-    .prediction-moderate { background-color: #f1c40f; display: block; color: #000; }
-    .prediction-high { background-color: #e74c3c; display: block; }
-
-    /* Charts section */
-    #charts-container {
-      margin-top: 40px;
+    /* Infographic numbers */
+    .info-metric {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--text-main), var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2px;
     }
 
-    canvas {
-      margin-top: 20px;
+    /* Pulse animation */
+    .pulse-glow {
+      animation: pulse 2s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px rgba(0, 242, 254, 0.2); }
+      100% { box-shadow: 0 0 25px rgba(0, 242, 254, 0.5); }
+    }
+
+    /* Loader */
+    .loader-wrapper {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(7, 17, 30, 0.85);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 20px;
+      backdrop-filter: blur(5px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .loader-wrapper.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(0, 242, 254, 0.1);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 1s infinite linear;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
-
 <body>
-  <div class="card">
-    <h2>🌊 Ship CO₂ Emission Predictor</h2>
 
-    <!-- Form -->
-    <form action="/predict" method="post">
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label>Ship Type:</label>
-          <select class="form-select" name="ship_type" required>
-            <option>Bulk carrier</option>
-            <option>Ro-ro ship</option>
-            <option>Ro-pax ship</option>
-            <option>Container/ro-ro cargo ship</option>
-            <option>General cargo ship</option>
-            <option>Refrigerated cargo carrier</option>
-          </select>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label>Technical Efficiency:</label>
-          <div class="input-group">
-            <input type="number" step="any" name="technical_efficiency" class="form-control" required>
-            <span class="input-group-text">%</span>
-          </div>
-        </div>
-      </div>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+    <div class="container py-2">
+      <a class="navbar-brand d-flex align-items-center" href="#" id="home-link">
+        <i class="bi bi-water me-2 text-info"></i>
+        <span class="brand-font">GreenWaves</span>
+      </a>
+      <span class="badge bg-secondary-subtle text-muted border border-secondary-subtle px-3 py-2 rounded-pill font-monospace">
+        Emission Predictor v2.1
+      </span>
+    </div>
+  </nav>
 
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label>Total Fuel Consumption:</label>
-          <div class="input-group">
-            <input type="number" step="any" name="fuel_consumption" class="form-control" required>
-            <span class="input-group-text">m tonnes</span>
-          </div>
+  <!-- Main Container -->
+  <div class="container my-4 py-3 position-relative" style="z-index: 1;">
+    
+    <!-- Hero / Title -->
+    <div class="row mb-5 text-center">
+      <div class="col-lg-8 mx-auto">
+        <span class="text-uppercase tracking-wider text-info font-monospace fw-semibold" style="font-size: 0.85rem;">
+          🌍 Climate Tech & Fleet Sustainability
+        </span>
+        <h1 class="display-5 text-white mt-2 mb-3">Ship CO₂ Emission Intelligence</h1>
+        <p class="text-muted leading-relaxed">
+          Leverage predictive machine learning models to analyze vessel efficiency metrics, estimate Carbon Intensity Indicator (CII) ratings, and simulate maritime offsets.
+        </p>
+        
+        <!-- Navigation Pills -->
+        <div class="d-flex justify-content-center mt-4">
+          <ul class="nav nav-pills bg-black bg-opacity-30 p-1.5 rounded-pill border border-secondary-subtle border-opacity-10" id="dashboard-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="calc-tab" data-bs-toggle="pill" data-bs-target="#tab-calculator" type="button" role="tab">
+                <i class="bi bi-calculator me-1"></i> Calculator
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="sim-tab" data-bs-toggle="pill" data-bs-target="#tab-simulator" type="button" role="tab">
+                <i class="bi bi-sliders me-1"></i> Sandbox Sim
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="reg-tab" data-bs-toggle="pill" data-bs-target="#tab-regulations" type="button" role="tab">
+                <i class="bi bi-file-earmark-medical me-1"></i> IMO Rules
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="history-tab" data-bs-toggle="pill" data-bs-target="#tab-history" type="button" role="tab">
+                <i class="bi bi-clock-history me-1"></i> Logs & Analytics
+              </button>
+            </li>
+          </ul>
         </div>
-        <div class="col-md-6 mb-3">
-          <label>Total CO₂ Emissions:</label>
-          <div class="input-group">
-            <input type="number" step="any" name="co2_emissions" class="form-control" required>
-            <span class="input-group-text">m tonnes</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label>Annual Time at Sea:</label>
-          <div class="input-group">
-            <input type="number" step="any" name="annual_time_sea" class="form-control" required>
-            <span class="input-group-text">hours</span>
-          </div>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label>Annual Avg Fuel per Distance:</label>
-          <div class="input-group">
-            <input type="number" step="any" name="avg_fuel_distance" class="form-control" required>
-            <span class="input-group-text">kg/n mile</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label>Annual Avg Fuel per Work:</label>
-          <div class="input-group">
-            <input type="number" step="any" name="avg_fuel_work" class="form-control" required>
-            <span class="input-group-text">g/m·n miles</span>
-          </div>
-        </div>
-        <div class="col-md-6 mb-3">
-          <label>Annual Avg CO₂ per Work:</label>
-          <div class="input-group">
-            <input type="number" step="any" name="avg_co2_work" class="form-control" required>
-            <span class="input-group-text">g CO₂/m·n miles</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label>Time Spent at Sea:</label>
-        <div class="input-group">
-          <input type="number" step="any" name="time_at_sea" class="form-control" required>
-          <span class="input-group-text">hours</span>
-        </div>
-      </div>
-
-      <button type="submit" class="btn-predict">🚀 Predict Emissions</button>
-    </form>
-
-    <!-- Prediction Box -->
-    {% if prediction_text %}
-    <div id="prediction-box" class="prediction-box
-         {% if 'Low' in prediction_text %}prediction-low{% elif 'Moderate' in prediction_text %}prediction-moderate{% else %}prediction-high{% endif %}">
-      <p>{{ prediction_text }}</p>
-
-      <!-- Charts -->
-      <div id="charts-container">
-        <canvas id="gaugeChart"></canvas>
-        <canvas id="historyChart"></canvas>
       </div>
     </div>
-    {% endif %}
+
+    <!-- Main Content Tabs -->
+    <div class="tab-content" id="tab-content-main">
+      
+      <!-- Tab 1: Calculator -->
+      <div class="tab-pane fade show active" id="tab-calculator" role="tabpanel">
+        <div class="row g-4">
+          
+          <!-- Presets and Input Form Card -->
+          <div class="col-lg-7">
+            <div class="glass-card p-4 h-100 position-relative">
+              
+              <!-- Loader inside card -->
+              <div class="loader-wrapper" id="calculator-loader">
+                <div class="spinner mb-3"></div>
+                <h5 class="text-white">Analyzing Vessel Metrics...</h5>
+                <p class="text-muted small">Computing machine learning prediction</p>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between mb-4 border-bottom border-secondary border-opacity-20 pb-3">
+                <h4 class="mb-0 text-info"><i class="bi bi-gear-wide-connected me-2"></i>Vessel Parameters</h4>
+                <span class="text-muted small">All fields are required</span>
+              </div>
+
+              <!-- Quick Presets -->
+              <div class="mb-4">
+                <label class="form-label d-block text-muted mb-2">⚡ Quick Fill Presets</label>
+                <div class="row g-2">
+                  <div class="col-6 col-md-3">
+                    <button class="preset-pill text-truncate" onclick="loadPreset('Bulk carrier')">
+                      <i class="bi bi-box-seam me-1 text-primary"></i> Bulk Carrier
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button class="preset-pill text-truncate" onclick="loadPreset('General cargo ship')">
+                      <i class="bi bi-truck me-1 text-success"></i> General Cargo
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button class="preset-pill text-truncate" onclick="loadPreset('Refrigerated cargo carrier')">
+                      <i class="bi bi-thermometer-snow me-1 text-info"></i> Reefer Ship
+                    </button>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <button class="preset-pill text-truncate" onclick="loadPreset('Ro-ro ship')">
+                      <i class="bi bi-car-front-fill me-1 text-warning"></i> Ro-Ro Cargo
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form -->
+              <form id="emissionForm">
+                <div class="row g-3">
+                  
+                  <div class="col-md-6">
+                    <label class="form-label">Ship Category</label>
+                    <select class="form-select" id="ship_type" name="ship_type" required>
+                      <option value="" disabled selected>Select category</option>
+                      <option value="Bulk carrier">Bulk carrier</option>
+                      <option value="General cargo ship">General cargo ship</option>
+                      <option value="Refrigerated cargo carrier">Refrigerated cargo carrier</option>
+                      <option value="Ro-ro ship">Ro-ro ship</option>
+                    </select>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <label class="form-label">Technical Efficiency</label>
+                    <div class="input-group">
+                      <input type="number" step="any" min="0" max="100" id="technical_efficiency" name="technical_efficiency" class="form-control" placeholder="E.g., 3.5" required>
+                      <span class="input-group-text">%</span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Annual Fuel Consumption</label>
+                    <div class="input-group">
+                      <input type="number" step="any" min="0" id="fuel_consumption" name="fuel_consumption" class="form-control" placeholder="E.g., 4500" required>
+                      <span class="input-group-text">m tonnes</span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Annual CO₂ Emissions</label>
+                    <div class="input-group">
+                      <input type="number" step="any" min="0" id="co2_emissions" name="co2_emissions" class="form-control" placeholder="E.g., 14100" required>
+                      <span class="input-group-text">m tonnes</span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Annual Time at Sea</label>
+                    <div class="input-group">
+                      <input type="number" step="any" min="0" id="annual_time_sea" name="annual_time_sea" class="form-control" placeholder="E.g., 5200" required>
+                      <span class="input-group-text">hours</span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Avg Fuel per Distance</label>
+                    <div class="input-group">
+                      <input type="number" step="any" min="0" id="avg_fuel_distance" name="avg_fuel_distance" class="form-control" placeholder="E.g., 35.8" required>
+                      <span class="input-group-text">kg/n mile</span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Avg Fuel per Work</label>
+                    <div class="input-group">
+                      <input type="number" step="any" min="0" id="avg_fuel_work" name="avg_fuel_work" class="form-control" placeholder="E.g., 4.2" required>
+                      <span class="input-group-text">g/m·t·nm</span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Avg CO₂ per Work</label>
+                    <div class="input-group">
+                      <input type="number" step="any" min="0" id="avg_co2_work" name="avg_co2_work" class="form-control" placeholder="E.g., 13.2" required>
+                      <span class="input-group-text">g CO₂/m·t·nm</span>
+                    </div>
+                  </div>
+
+                  <div class="col-md-12">
+                    <label class="form-label">Target Journey Duration</label>
+                    <div class="input-group">
+                      <input type="number" step="any" min="0" id="time_at_sea" name="time_at_sea" class="form-control" placeholder="E.g., 240" required>
+                      <span class="input-group-text">hours</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="mt-4">
+                  <button type="submit" class="btn-gradient w-100 py-3">
+                    <i class="bi bi-compass-fill me-2"></i>Compute Carbon Footprint
+                  </button>
+                </div>
+              </form>
+
+            </div>
+          </div>
+          
+          <!-- Real-time Predictions & Dynamic Output Cards -->
+          <div class="col-lg-5">
+            <div class="d-flex flex-column gap-4 h-100">
+              
+              <!-- Instructions/Fallback card (Shown when no prediction yet) -->
+              <div class="glass-card p-4 text-center d-flex flex-column align-items-center justify-content-center flex-grow-1" id="no-prediction-card">
+                <div class="rounded-circle bg-info bg-opacity-10 p-4 mb-4 text-info pulse-glow" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                  <i class="bi bi-cloud-haze2-fill" style="font-size: 2.2rem;"></i>
+                </div>
+                <h4 class="text-white">Awaiting Diagnostics</h4>
+                <p class="text-muted px-3 small">
+                  Fill out the parameters or select a preset to analyze your vessel's environmental rating. Real-time metrics will render here once computed.
+                </p>
+                <button class="btn btn-outline-info rounded-pill px-4 py-2 mt-2" onclick="loadPreset('Bulk carrier')">
+                  Try Bulk Carrier Preset
+                </button>
+              </div>
+
+              <!-- Prediction Results Dashboard (Hidden by default) -->
+              <div class="glass-card p-4 d-none" id="prediction-results-card">
+                <h4 class="text-info border-bottom border-secondary border-opacity-20 pb-3 mb-3">
+                  <i class="bi bi-shield-check me-2"></i>Emission Intelligence Report
+                </h4>
+
+                <!-- Big metric -->
+                <div class="text-center my-4">
+                  <span class="text-muted d-block text-uppercase font-monospace small">Predicted CO₂ Emission Index</span>
+                  <div class="display-3 fw-extrabold text-white my-1" id="predicted-value">0.00</div>
+                  <span class="text-muted small">g CO₂ per nautical mile</span>
+                  
+                  <div class="mt-3 px-3 py-2 rounded-pill font-monospace d-inline-block text-white" id="emission-badge-label">
+                    -
+                  </div>
+                </div>
+
+                <!-- CII rating indicator -->
+                <div class="row align-items-center bg-black bg-opacity-25 rounded-3 p-3 mb-4 border border-secondary border-opacity-20">
+                  <div class="col-8">
+                    <h5 class="mb-1 text-white">Estimated CII Rating</h5>
+                    <p class="text-muted small mb-0">Carbon Intensity Indicator based on IMO 2023 efficiency standard bands.</p>
+                  </div>
+                  <div class="col-4 text-center">
+                    <div class="cii-badge" id="cii-rating-badge">-</div>
+                  </div>
+                </div>
+
+                <!-- Gauge Canvas -->
+                <div class="mb-3" style="position: relative; height: 160px;">
+                  <canvas id="liveGaugeChart"></canvas>
+                </div>
+              </div>
+
+              <!-- Offset and Environmental equivalents card (Hidden by default) -->
+              <div class="glass-card p-4 d-none" id="eco-impact-card">
+                <h4 class="text-info border-bottom border-secondary border-opacity-20 pb-3 mb-3">
+                  <i class="bi bi-tree-fill me-2"></i>Annual Carbon Offset Equivalence
+                </h4>
+                <p class="text-muted small mb-4">
+                  Calculated offsets for standard annual fleet activity (estimated at 50,000 nautical miles per year):
+                </p>
+
+                <div class="row g-3 text-center">
+                  <!-- Metric 1 -->
+                  <div class="col-4">
+                    <div class="p-3 bg-black bg-opacity-20 rounded-3 border border-secondary border-opacity-10 h-100">
+                      <i class="bi bi-tree text-success" style="font-size: 1.8rem;"></i>
+                      <div class="info-metric mt-2" id="metric-trees">0</div>
+                      <span class="text-muted small d-block">Forest Trees Offset</span>
+                    </div>
+                  </div>
+                  <!-- Metric 2 -->
+                  <div class="col-4">
+                    <div class="p-3 bg-black bg-opacity-20 rounded-3 border border-secondary border-opacity-10 h-100">
+                      <i class="bi bi-car-front text-warning" style="font-size: 1.8rem;"></i>
+                      <div class="info-metric mt-2" id="metric-cars">0</div>
+                      <span class="text-muted small d-block">Car Emissions</span>
+                    </div>
+                  </div>
+                  <!-- Metric 3 -->
+                  <div class="col-4">
+                    <div class="p-3 bg-black bg-opacity-20 rounded-3 border border-secondary border-opacity-10 h-100">
+                      <i class="bi bi-house text-info" style="font-size: 1.8rem;"></i>
+                      <div class="info-metric mt-2" id="metric-homes">0</div>
+                      <span class="text-muted small d-block">Homes Electricity</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                  <button class="btn btn-sm btn-outline-secondary px-3" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Print PDF Report
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+      
+      <!-- Tab 2: Sandbox Simulator -->
+      <div class="tab-pane fade" id="tab-simulator" role="tabpanel">
+        <div class="glass-card p-4">
+          <h4 class="text-info border-bottom border-secondary border-opacity-20 pb-3 mb-4">
+            <i class="bi bi-cpu-fill me-2"></i>Vessel Efficiency Simulator Sandbox
+          </h4>
+          <p class="text-muted">
+            Modify active operational handles below to estimate fuel dynamics and predicted carbon footprints instantly. The sandbox simulates model projections using dynamic linear carbon relationships.
+          </p>
+
+          <div class="row g-4 mt-2">
+            <!-- Sliders Panel -->
+            <div class="col-lg-6">
+              <div class="bg-black bg-opacity-25 rounded-4 p-4 border border-secondary border-opacity-10 h-100">
+                <h5 class="text-white mb-4"><i class="bi bi-sliders2-vertical me-2"></i>Active Operational Sliders</h5>
+                
+                <!-- Slider 1 -->
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between mb-1">
+                    <label class="form-label text-muted mb-0">Total Distance Travelled (nm)</label>
+                    <span class="text-info fw-semibold" id="sim-dist-val">40,000</span>
+                  </div>
+                  <input type="range" class="form-range" min="1000" max="100000" step="1000" value="40000" id="sim-distance" oninput="runSandboxSim()">
+                </div>
+
+                <!-- Slider 2 -->
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between mb-1">
+                    <label class="form-label text-muted mb-0">Average Speed Index (knots)</label>
+                    <span class="text-info fw-semibold" id="sim-speed-val">15</span>
+                  </div>
+                  <input type="range" class="form-range" min="8" max="30" step="0.5" value="15" id="sim-speed" oninput="runSandboxSim()">
+                </div>
+
+                <!-- Slider 3 -->
+                <div class="mb-4">
+                  <div class="d-flex justify-content-between mb-1">
+                    <label class="form-label text-muted mb-0">Fuel Efficiency Adjustment (%)</label>
+                    <span class="text-info fw-semibold" id="sim-eff-val">0% (Baseline)</span>
+                  </div>
+                  <input type="range" class="form-range" min="-30" max="30" step="1" value="0" id="sim-efficiency" oninput="runSandboxSim()">
+                  <div class="d-flex justify-content-between small text-muted">
+                    <span>-30% (Inefficient)</span>
+                    <span>+30% (Eco-optimized)</span>
+                  </div>
+                </div>
+
+                <!-- Ship Selector -->
+                <div class="mb-2">
+                  <label class="form-label text-muted">Vessel Type Baseline</label>
+                  <select class="form-select" id="sim-vessel-type" onchange="runSandboxSim()">
+                    <option value="Bulk carrier" selected>Bulk carrier</option>
+                    <option value="General cargo ship">General cargo ship</option>
+                    <option value="Refrigerated cargo carrier">Refrigerated cargo carrier</option>
+                    <option value="Ro-ro ship">Ro-ro ship</option>
+                  </select>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Projections display -->
+            <div class="col-lg-6">
+              <div class="bg-black bg-opacity-25 rounded-4 p-4 border border-secondary border-opacity-10 h-100 d-flex flex-column justify-content-between">
+                <div>
+                  <h5 class="text-white mb-4"><i class="bi bi-activity me-2"></i>Simulated Projections</h5>
+                  
+                  <div class="row g-3 mb-4">
+                    <div class="col-6">
+                      <div class="p-3 bg-dark bg-opacity-50 rounded-3 border border-secondary border-opacity-10">
+                        <span class="text-muted small d-block">Estimated Fuel Consumed</span>
+                        <h4 class="text-white mt-1" id="sim-fuel-display">3,600 tonnes</h4>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="p-3 bg-dark bg-opacity-50 rounded-3 border border-secondary border-opacity-10">
+                        <span class="text-muted small d-block">Estimated CO₂ Output</span>
+                        <h4 class="text-white mt-1" id="sim-co2-display">11,280 tonnes</h4>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="text-center p-4 rounded-3 bg-black bg-opacity-40 border border-info border-opacity-20 mb-3">
+                    <span class="text-muted small d-block text-uppercase font-monospace">Simulated CO₂ Index</span>
+                    <h2 class="display-4 text-info fw-extrabold my-2" id="sim-pred-display">42.5 g/nm</h2>
+                    <span class="badge bg-success-subtle text-success border border-success border-opacity-20 px-3 py-1.5 rounded-pill font-monospace" id="sim-rating-badge">
+                      🌿 Low Emission (CII: B)
+                    </span>
+                  </div>
+                </div>
+
+                <p class="text-muted small mb-0 mt-3 text-center">
+                  ⚠️ Note: Simulator values are calculated based on operational formulas calibrated against our machine learning model. For full predictions, please use the Main Calculator.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: IMO Regulations -->
+      <div class="tab-pane fade" id="tab-regulations" role="tabpanel">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div class="glass-card p-4 h-100">
+              <h4 class="text-info border-bottom border-secondary border-opacity-20 pb-3 mb-4">
+                <i class="bi bi-globe-americas me-2"></i>IMO Decarbonization Targets & CII Ratings
+              </h4>
+              <p>
+                The International Maritime Organization (IMO) has implemented mandatory measures to reduce carbon emissions from international shipping. Central to this strategy is the Carbon Intensity Indicator (CII).
+              </p>
+              
+              <div class="row g-3 my-3">
+                <div class="col-md-6">
+                  <div class="p-3 rounded-3 bg-black bg-opacity-20 border border-secondary border-opacity-10 h-100">
+                    <h5 class="text-white"><i class="bi bi-compass text-info me-2"></i>EEDI & EEXI</h5>
+                    <p class="text-muted small mb-0">
+                      The Energy Efficiency Design Index (EEDI) applies to newbuilds, whereas the Energy Efficiency Existing Ship Index (EEXI) sets limits for existing fleet performance. Both reflect the technical design efficiency of vessels.
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="p-3 rounded-3 bg-black bg-opacity-20 border border-secondary border-opacity-10 h-100">
+                    <h5 class="text-white"><i class="bi bi-tag text-info me-2"></i>CII Operational Rating</h5>
+                    <p class="text-muted small mb-0">
+                      CII tracks operational performance annually. Ships receive an annual rating (A to E, where A is superior). A ship rated D for three consecutive years or E for one year must submit a corrective action plan.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <h5 class="text-white mt-4 mb-3">Understanding the CII Bands:</h5>
+              <div class="table-responsive">
+                <table class="table table-dark table-hover border border-secondary border-opacity-20 rounded-3 overflow-hidden">
+                  <thead>
+                    <tr>
+                      <th>Rating</th>
+                      <th>Status</th>
+                      <th>Performance</th>
+                      <th>Consequences</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="badge bg-success text-black px-3">A</span></td>
+                      <td class="text-success font-monospace">Major Superior</td>
+                      <td>Highly optimized technical efficiency, eco-speed configurations</td>
+                      <td>No action required. Eligible for port incentives.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge bg-info text-black px-3">B</span></td>
+                      <td class="text-info font-monospace">Minor Superior</td>
+                      <td>Above-average operational management</td>
+                      <td>No action required.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge bg-warning text-black px-3">C</span></td>
+                      <td class="text-warning font-monospace">Moderate</td>
+                      <td>Baseline acceptable performance</td>
+                      <td>No action required. Recommended monitoring.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge bg-danger bg-opacity-50 text-white px-3">D</span></td>
+                      <td class="text-danger font-monospace text-opacity-70">Minor Inferior</td>
+                      <td>Below-average fuel efficiency</td>
+                      <td>Corrective action required if rating persists for 3 years.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge bg-danger text-white px-3">E</span></td>
+                      <td class="text-danger font-monospace">Inferior</td>
+                      <td>High emissions, inefficient machinery/operation</td>
+                      <td>Immediate corrective action plan required in SEEMP.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-4">
+            <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <h4 class="text-info border-bottom border-secondary border-opacity-20 pb-3 mb-3">
+                  <i class="bi bi-info-circle-fill me-2"></i>Fast Facts
+                </h4>
+                <ul class="list-group list-group-flush bg-transparent">
+                  <li class="list-group-item bg-transparent text-muted px-0 py-3">
+                    <h6 class="text-white mb-1">🌍 Global Impact</h6>
+                    Maritime shipping transports ~90% of global trade and accounts for <strong>2.9% of global greenhouse emissions</strong>.
+                  </li>
+                  <li class="list-group-item bg-transparent text-muted px-0 py-3">
+                    <h6 class="text-white mb-1">🎯 IMO Goal 2050</h6>
+                    The IMO target is to achieve <strong>net-zero greenhouse gas emissions</strong> in international shipping by or around 2050.
+                  </li>
+                  <li class="list-group-item bg-transparent text-muted px-0 py-3">
+                    <h6 class="text-white mb-1">⚡ Speed Reduction</h6>
+                    Reducing vessel speed by 10% can lower fuel consumption and greenhouse gas emissions by up to <strong>30%</strong>.
+                  </li>
+                </ul>
+              </div>
+
+              <div class="p-3 bg-info bg-opacity-5 rounded-3 border border-info border-opacity-20 mt-4">
+                <h6 class="text-info"><i class="bi bi-lightbulb me-1"></i> Did you know?</h6>
+                <p class="text-muted small mb-0">
+                  Bulk carriers typically maintain a lower CO₂ Index (g/nm) due to slower speeds and higher payloads compared to high-speed Ro-Ro cargo vessels.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Logs & Analytics -->
+      <div class="tab-pane fade" id="tab-history" role="tabpanel">
+        <div class="glass-card p-4">
+          <div class="d-flex align-items-center justify-content-between border-bottom border-secondary border-opacity-20 pb-3 mb-4">
+            <h4 class="text-info mb-0">
+              <i class="bi bi-graph-up-arrow me-2"></i>Historical Calculation Analytics
+            </h4>
+            <div>
+              <button class="btn btn-sm btn-outline-danger me-2" onclick="clearHistory()">
+                <i class="bi bi-trash-fill me-1"></i> Clear Logs
+              </button>
+              <button class="btn btn-sm btn-outline-info" onclick="exportHistory()">
+                <i class="bi bi-download me-1"></i> Export JSON
+              </button>
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <!-- Charts Column -->
+            <div class="col-lg-6">
+              <div class="bg-black bg-opacity-25 rounded-4 p-3 border border-secondary border-opacity-10 mb-4">
+                <h5 class="text-white mb-3 text-center">Prediction Trend Lines (g CO₂/nm)</h5>
+                <div style="position: relative; height: 260px;">
+                  <canvas id="historyLineChart"></canvas>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-lg-6">
+              <div class="bg-black bg-opacity-25 rounded-4 p-3 border border-secondary border-opacity-10 mb-4">
+                <h5 class="text-white mb-3 text-center">Vessel Type Benchmarks</h5>
+                <div style="position: relative; height: 260px;">
+                  <canvas id="historyCompareChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- List Table Column -->
+            <div class="col-12">
+              <h5 class="text-white mb-3"><i class="bi bi-journal-text me-2"></i>Recent Calculation Records</h5>
+              <div class="table-responsive">
+                <table class="table table-dark table-hover border border-secondary border-opacity-10 align-middle">
+                  <thead>
+                    <tr>
+                      <th>Vessel Type</th>
+                      <th>Technical Eff.</th>
+                      <th>Annual Fuel</th>
+                      <th>Annual CO₂</th>
+                      <th>Pred CO₂ Rate</th>
+                      <th>CII Rating</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="history-table-body">
+                    <!-- Loaded dynamically via JS -->
+                    <tr>
+                      <td colspan="7" class="text-center text-muted py-4">No prediction records available. Run calculations to generate logs.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- Chart.js logic -->
+  <!-- Footer -->
+  <footer class="footer mt-auto py-4 bg-transparent border-top border-secondary border-opacity-10" style="position: relative; z-index: 1;">
+    <div class="container text-center">
+      <p class="text-muted small mb-0">
+        &copy; 2026 GreenWaves Fleet Sustainability Portal. Powered by machine learning and maritime analytics.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Application Logic -->
   <script>
-    {% if prediction_text %}
-    const text = "{{ prediction_text }}";
-    let value = parseFloat(text.match(/[0-9.]+/));
-    if (isNaN(value)) value = 0;
-
-    // Gauge Chart
-    const ctxGauge = document.getElementById('gaugeChart').getContext('2d');
-    new Chart(ctxGauge, {
-      type: 'doughnut',
-      data: {
-        datasets: [{
-          data: [value, 200 - value],
-          backgroundColor: value < 50 ? ['#2ecc71', '#e0e0e0'] :
-                            value < 150 ? ['#f1c40f', '#e0e0e0'] :
-                                          ['#e74c3c', '#e0e0e0'],
-          borderWidth: 0
-        }]
+    // Presets data matching valid encoder categories
+    const PRESETS = {
+      "Bulk carrier": {
+        technical_efficiency: 3.5,
+        fuel_consumption: 4500,
+        co2_emissions: 14100,
+        annual_time_sea: 5200,
+        avg_fuel_distance: 35.8,
+        avg_fuel_work: 4.2,
+        avg_co2_work: 13.2,
+        time_at_sea: 240
       },
-      options: {
-        circumference: 180,
-        rotation: 270,
-        cutout: '70%',
-        plugins: {
-          tooltip: { enabled: false },
-          legend: { display: false },
-          title: {
-            display: true,
-            text: 'CO₂ Emission Gauge (g CO₂/n mile)',
-            color: '#0077b6',
-            font: { size: 18, weight: 'bold' }
-          }
+      "General cargo ship": {
+        technical_efficiency: 4.8,
+        fuel_consumption: 2200,
+        co2_emissions: 6900,
+        annual_time_sea: 3800,
+        avg_fuel_distance: 25.4,
+        avg_fuel_work: 6.5,
+        avg_co2_work: 20.4,
+        time_at_sea: 180
+      },
+      "Refrigerated cargo carrier": {
+        technical_efficiency: 5.2,
+        fuel_consumption: 1800,
+        co2_emissions: 5600,
+        annual_time_sea: 4100,
+        avg_fuel_distance: 22.1,
+        avg_fuel_work: 5.8,
+        avg_co2_work: 18.2,
+        time_at_sea: 200
+      },
+      "Ro-ro ship": {
+        technical_efficiency: 2.9,
+        fuel_consumption: 8500,
+        co2_emissions: 26600,
+        annual_time_sea: 6100,
+        avg_fuel_distance: 65.2,
+        avg_fuel_work: 12.8,
+        avg_co2_work: 40.1,
+        time_at_sea: 310
+      }
+    };
+
+    // Chart variables
+    let liveGaugeChartInstance = null;
+    let historyLineChartInstance = null;
+    let historyCompareChartInstance = null;
+
+    // Load selected preset into the form
+    function loadPreset(type) {
+      const p = PRESETS[type];
+      if (!p) return;
+
+      document.getElementById('ship_type').value = type;
+      document.getElementById('technical_efficiency').value = p.technical_efficiency;
+      document.getElementById('fuel_consumption').value = p.fuel_consumption;
+      document.getElementById('co2_emissions').value = p.co2_emissions;
+      document.getElementById('annual_time_sea').value = p.annual_time_sea;
+      document.getElementById('avg_fuel_distance').value = p.avg_fuel_distance;
+      document.getElementById('avg_fuel_work').value = p.avg_fuel_work;
+      document.getElementById('avg_co2_work').value = p.avg_co2_work;
+      document.getElementById('time_at_sea').value = p.time_at_sea;
+    }
+
+    // Main Form Submit Handler via AJAX
+    document.getElementById('emissionForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // Show loader
+      const loader = document.getElementById('calculator-loader');
+      loader.classList.add('active');
+
+      const formData = new FormData(this);
+      const dataObj = {};
+      formData.forEach((value, key) => {
+        dataObj[key] = value;
+      });
+
+      try {
+        const response = await fetch('/api/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dataObj)
+        });
+
+        const res = await response.json();
+        
+        if (response.ok && res.status === 'success') {
+          // Update the UI with results
+          displayResults(res, dataObj);
+        } else {
+          alert('Error: ' + (res.message || 'Unable to compute emission footprint.'));
         }
+      } catch (err) {
+        console.error(err);
+        alert('Network error. Make sure the backend server is running.');
+      } finally {
+        // Hide loader
+        loader.classList.remove('active');
       }
     });
 
-    // Historical Chart
-    let history = JSON.parse(localStorage.getItem('emissionHistory')) || [];
-    history.push(value);
-    if (history.length > 8) history.shift();
-    localStorage.setItem('emissionHistory', JSON.stringify(history));
+    function displayResults(res, inputs) {
+      // Hide empty instructions state
+      document.getElementById('no-prediction-card').classList.add('d-none');
+      
+      // Show results panels
+      document.getElementById('prediction-results-card').classList.remove('d-none');
+      document.getElementById('eco-impact-card').classList.remove('d-none');
 
-    const ctxHistory = document.getElementById('historyChart').getContext('2d');
-    new Chart(ctxHistory, {
-      type: 'bar',
-      data: {
-        labels: history.map((_, i) => "Run " + (i + 1)),
-        datasets: [{
-          label: "Predicted CO₂ (g/n mile)",
-          data: history,
-          backgroundColor: history.map(v => v < 50 ? '#2ecc71' : v < 150 ? '#f1c40f' : '#e74c3c')
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-          title: {
-            display: true,
-            text: 'Historical Emission Predictions (g CO₂/n mile)',
-            color: '#0077b6',
-            font: { size: 16, weight: 'bold' }
-          }
+      // Update text metrics
+      document.getElementById('predicted-value').innerText = res.prediction.toFixed(2);
+      
+      const badge = document.getElementById('emission-badge-label');
+      badge.innerText = res.category + " Emissions Profile";
+      badge.className = "mt-3 px-3 py-2 rounded-pill font-monospace d-inline-block text-black";
+      if (res.category === 'Low') {
+        badge.style.backgroundColor = '#2ecc71';
+      } else if (res.category === 'Moderate') {
+        badge.style.backgroundColor = '#f1c40f';
+      } else {
+        badge.style.backgroundColor = '#e74c3c';
+        badge.style.color = '#fff';
+      }
+
+      // Update CII rating
+      const ciiBadge = document.getElementById('cii-rating-badge');
+      ciiBadge.innerText = res.cii_rating;
+      ciiBadge.className = `cii-badge cii-${res.cii_rating}`;
+
+      // Update Offset Equivalents
+      document.getElementById('metric-trees').innerText = res.eco_impact.trees_offset.toLocaleString();
+      document.getElementById('metric-cars').innerText = res.eco_impact.cars_offset.toLocaleString();
+      document.getElementById('metric-homes').innerText = res.eco_impact.homes_offset.toLocaleString();
+
+      // Render Gauge
+      renderGaugeChart(res.prediction);
+
+      // Save to localStorage history
+      saveToHistory(res, inputs);
+
+      // Refresh line and compare charts
+      initHistoryCharts();
+    }
+
+    // Render the Gauge Chart
+    function renderGaugeChart(val) {
+      const ctx = document.getElementById('liveGaugeChart').getContext('2d');
+      
+      if (liveGaugeChartInstance) {
+        liveGaugeChartInstance.destroy();
+      }
+
+      // Max value representation 220
+      const displayVal = Math.min(val, 220);
+
+      liveGaugeChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Carbon Index', 'Remaining Range'],
+          datasets: [{
+            data: [displayVal, 220 - displayVal],
+            backgroundColor: val < 50 ? ['#2ecc71', 'rgba(255,255,255,0.05)'] :
+                             val < 150 ? ['#f1c40f', 'rgba(255,255,255,0.05)'] :
+                                         ['#e74c3c', 'rgba(255,255,255,0.05)'],
+            borderWidth: 0,
+            borderRadius: 10
+          }]
         },
-        scales: {
-          y: { beginAtZero: true, max: 200, title: { display: true, text: 'CO₂ (g/n mile)' } }
+        options: {
+          circumference: 180,
+          rotation: 270,
+          cutout: '75%',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: { enabled: false },
+            legend: { display: false },
+          }
         }
+      });
+    }
+
+    // Save predictions into local history
+    function saveToHistory(res, inputs) {
+      let history = JSON.parse(localStorage.getItem('emission_history_logs')) || [];
+      const record = {
+        id: Date.now(),
+        timestamp: new Date().toLocaleString(),
+        ship_type: inputs.ship_type,
+        technical_efficiency: parseFloat(inputs.technical_efficiency),
+        fuel_consumption: parseFloat(inputs.fuel_consumption),
+        co2_emissions: parseFloat(inputs.co2_emissions),
+        prediction: res.prediction,
+        cii_rating: res.cii_rating,
+        category: res.category
+      };
+      
+      history.unshift(record); // Add to beginning
+      if (history.length > 50) history.pop(); // Cap size
+      localStorage.setItem('emission_history_logs', JSON.stringify(history));
+
+      renderHistoryTable();
+    }
+
+    // Render logs table
+    function renderHistoryTable() {
+      const history = JSON.parse(localStorage.getItem('emission_history_logs')) || [];
+      const tbody = document.getElementById('history-table-body');
+      
+      if (history.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">No prediction records available. Run calculations to generate logs.</td>
+          </tr>
+        `;
+        return;
       }
+
+      tbody.innerHTML = history.map(item => `
+        <tr>
+          <td>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-ship-ease-out text-info me-2"></i>
+              <span>${item.ship_type}</span>
+            </div>
+          </td>
+          <td>${item.technical_efficiency.toFixed(2)}%</td>
+          <td>${item.fuel_consumption.toLocaleString()} t</td>
+          <td>${item.co2_emissions.toLocaleString()} t</td>
+          <td class="fw-semibold text-info">${item.prediction.toFixed(2)}</td>
+          <td>
+            <span class="badge bg-opacity-20 text-white ${
+              item.cii_rating === 'A' || item.cii_rating === 'B' ? 'bg-success' :
+              item.cii_rating === 'C' ? 'bg-warning text-black' : 'bg-danger'
+            } px-2 py-1">${item.cii_rating}</span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-link text-danger p-0" onclick="deleteHistoryItem(${item.id})">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function deleteHistoryItem(id) {
+      let history = JSON.parse(localStorage.getItem('emission_history_logs')) || [];
+      history = history.filter(item => item.id !== id);
+      localStorage.setItem('emission_history_logs', JSON.stringify(history));
+      renderHistoryTable();
+      initHistoryCharts();
+    }
+
+    function clearHistory() {
+      if (confirm("Are you sure you want to clear all calculation history?")) {
+        localStorage.removeItem('emission_history_logs');
+        renderHistoryTable();
+        initHistoryCharts();
+      }
+    }
+
+    function exportHistory() {
+      const history = localStorage.getItem('emission_history_logs') || "[]";
+      const blob = new Blob([history], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "greenwaves_emission_history.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Initialize Line and Comparison charts on History Tab
+    function initHistoryCharts() {
+      const history = JSON.parse(localStorage.getItem('emission_history_logs')) || [];
+      
+      // 1. Line Chart: last 8 predictions
+      const recent = [...history].reverse().slice(-8);
+      const labels = recent.map((item, idx) => `Run ${idx + 1}`);
+      const dataVals = recent.map(item => item.prediction);
+      
+      const ctxLine = document.getElementById('historyLineChart').getContext('2d');
+      if (historyLineChartInstance) {
+        historyLineChartInstance.destroy();
+      }
+
+      historyLineChartInstance = new Chart(ctxLine, {
+        type: 'line',
+        data: {
+          labels: labels.length > 0 ? labels : ['No Runs'],
+          datasets: [{
+            label: 'Predicted CO₂ Index (g/nm)',
+            data: dataVals.length > 0 ? dataVals : [0],
+            borderColor: '#00f2fe',
+            backgroundColor: 'rgba(0, 242, 254, 0.1)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#4facfe',
+            pointRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8' }
+            }
+          }
+        }
+      });
+
+      // 2. Comparison Bar Chart: average by ship type
+      const averages = {
+        "Bulk carrier": [],
+        "General cargo ship": [],
+        "Refrigerated cargo carrier": [],
+        "Ro-ro ship": []
+      };
+
+      history.forEach(item => {
+        if (averages[item.ship_type]) {
+          averages[item.ship_type].push(item.prediction);
+        }
+      });
+
+      const avgLabels = Object.keys(averages);
+      const avgData = avgLabels.map(key => {
+        const arr = averages[key];
+        if (arr.length === 0) return 0;
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
+      });
+
+      const ctxCompare = document.getElementById('historyCompareChart').getContext('2d');
+      if (historyCompareChartInstance) {
+        historyCompareChartInstance.destroy();
+      }
+
+      historyCompareChartInstance = new Chart(ctxCompare, {
+        type: 'bar',
+        data: {
+          labels: avgLabels,
+          datasets: [{
+            label: 'Your Avg (g/nm)',
+            data: avgData,
+            backgroundColor: ['#2ecc71', '#3498db', '#f1c40f', '#e74c3c'],
+            borderRadius: 6
+          }, {
+            label: 'Global Typical Avg',
+            data: [35.8, 25.4, 22.1, 65.2], // Standard baselines
+            backgroundColor: 'rgba(255,255,255,0.08)',
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.2)',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#94a3b8' } }
+          },
+          scales: {
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8' }
+            }
+          }
+        }
+      });
+    }
+
+    // Sandbox Simulator logic
+    function runSandboxSim() {
+      const dist = parseFloat(document.getElementById('sim-distance').value);
+      const speed = parseFloat(document.getElementById('sim-speed').value);
+      const efficiency = parseFloat(document.getElementById('sim-efficiency').value); // in percent
+      const vesselType = document.getElementById('sim-vessel-type').value;
+
+      // Update text displays
+      document.getElementById('sim-dist-val').innerText = dist.toLocaleString() + " nm";
+      document.getElementById('sim-speed-val').innerText = speed.toFixed(1) + " knots";
+      
+      const effSign = efficiency > 0 ? "+" : "";
+      document.getElementById('sim-eff-val').innerText = `${effSign}${efficiency}% ${efficiency > 0 ? '(Eco-optimized)' : efficiency < 0 ? '(Inefficient)' : '(Baseline)'}`;
+
+      // Typical fuel consumption rate constants per hour (metric tonnes)
+      const FUEL_RATES = {
+        "Bulk carrier": 1.2,
+        "General cargo ship": 0.8,
+        "Refrigerated cargo carrier": 0.6,
+        "Ro-ro ship": 2.2
+      };
+
+      const baselineRate = FUEL_RATES[vesselType] || 1.0;
+      
+      // Calculate hours at sea: distance / speed
+      const hours = dist / speed;
+      
+      // Fuel consumption: hours * fuel rate, modified by speed factor (cubic law relationship) and efficiency
+      // speed_factor = (speed / baseline_speed)^2
+      const baselineSpeed = 15.0;
+      const speedFactor = Math.pow(speed / baselineSpeed, 2);
+      
+      // Efficiency factor: if efficiency is +10% (eco), we consume 10% less fuel.
+      const effMultiplier = 1.0 - (efficiency / 100.0);
+      
+      const fuelConsumed = hours * baselineRate * speedFactor * effMultiplier;
+      
+      // CO2 Emissions = fuel consumed * 3.114 (standard conversion factor for marine fuel oil)
+      const co2Emitted = fuelConsumed * 3.114;
+
+      // CO2 rate index (g/nm) = (CO2 emitted in tonnes * 1,000,000) / distance
+      const co2Index = (co2Emitted * 1000000.0) / dist;
+
+      // Update Simulator UI Displays
+      document.getElementById('sim-fuel-display').innerText = Math.round(fuelConsumed).toLocaleString() + " tonnes";
+      document.getElementById('sim-co2-display').innerText = Math.round(co2Emitted).toLocaleString() + " tonnes";
+      document.getElementById('sim-pred-display').innerText = co2Index.toFixed(1) + " g/nm";
+
+      // Determine category and rating
+      let category = "";
+      let rating = "";
+      let colorClass = "";
+      if (co2Index < 50) {
+        category = "Low Emission";
+        rating = co2Index < 30 ? "A" : "B";
+        colorClass = "bg-success-subtle text-success border-success";
+      } else if (co2Index < 150) {
+        category = "Moderate Emission";
+        rating = co2Index < 100 ? "C" : "D";
+        colorClass = "bg-warning-subtle text-warning border-warning";
+      } else {
+        category = "High Emission";
+        rating = "E";
+        colorClass = "bg-danger-subtle text-danger border-danger";
+      }
+
+      const badge = document.getElementById('sim-rating-badge');
+      badge.innerText = `🌿 ${category} (CII: ${rating})`;
+      badge.className = `badge ${colorClass} border px-3 py-1.5 rounded-pill font-monospace`;
+    }
+
+    // When tabs are clicked, redraw charts if necessary
+    document.getElementById('history-tab').addEventListener('shown.bs.tab', function () {
+      initHistoryCharts();
     });
-    {% endif %}
+
+    // Run initialization on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderHistoryTable();
+      initHistoryCharts();
+      runSandboxSim(); // Initial sandbox simulation run
+    });
   </script>
+
 </body>
 </html>
