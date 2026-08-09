@@ -1,4 +1,4 @@
-# GreenWaves — Ship CO₂ Emission Intelligence Dashboard
+# Ship CO₂ Emission Intelligence Dashboard
 
 GreenWaves is a modern, high-fidelity web dashboard that leverages predictive machine learning models to analyze vessel efficiency metrics, estimate Carbon Intensity Indicator (CII) ratings, and simulate maritime carbon offsets.
 
